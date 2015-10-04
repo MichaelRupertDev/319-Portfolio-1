@@ -1,9 +1,6 @@
 package p1_319;
 
-import com.sun.tools.javac.util.ArrayUtils;
-
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,7 +25,6 @@ import java.util.Scanner;
  */
 public class GameStructure {
 
-	public double bankOffer;
 	public String player;
 	public double[][] cases;
 	public double[][] casesInOrder;
@@ -42,7 +38,6 @@ public class GameStructure {
 //	10000 // 25000 //	50000 //	75000 //	100000
 //	200000 //	300000 //	400000 //	500000 //	750000
 //	1000000
-
 
 	/**
 	 * Sets player to the name of the player
@@ -91,6 +86,7 @@ public class GameStructure {
 
 	/**
 	 * creates a value that is a simulated offer from the banker
+	 *
 	 * The offer is calculated by taking every case that is in play and adding them together. Then, offer is divided
 	 * by casesLeft to return the offer. The offer is essentially the average of the cases remaining.
 	 *
@@ -141,19 +137,22 @@ public class GameStructure {
 	public JButton[] generate_case_buttons(GameStructure game){
 		JButton[] buttons = new JButton[26];
 		for(int i = 0; i < 26; i++){
+			//never use case at 0th position.
 			if(i == game.userCase)
 			{
 				buttons[i] = null;
 			}
+			//If case is still in play, create a button to represent the case.
 			else if(this.cases[0][i] == 1)
 			{
 				JButton button = new JButton("" + i);
 				ImageIcon img = new ImageIcon("briefcase08.gif");
-				button.setVerticalTextPosition(SwingConstants.NORTH);
+				button.setVerticalTextPosition(SwingConstants.TOP);
 				button.setIcon(img);
 				button.setSize(10, 10);
 				buttons[i] = button;
 			}
+			//If case is not in play, fill it with null.
 			else
 			{
 				buttons[i] = null;
@@ -246,7 +245,6 @@ public class GameStructure {
 			return true;
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
@@ -282,7 +280,7 @@ public class GameStructure {
 		}
 	}
 	/**
-	 * Draws Jbuttons for each of the cases in play.
+	 * Draws the JButtons representing the cases to the game window, and creates the listeners needed to draw further dialogs.
 	 * @param game - The current GameStructure
 	 * @param window - The JFrame that will hold the case JButtons
 	 **/
@@ -299,7 +297,9 @@ public class GameStructure {
 		buttons_panel.add(save_btn, BorderLayout.EAST);
 		buttons_panel.add(load_btn, BorderLayout.WEST);
 		window.add(buttons_panel, BorderLayout.SOUTH);
-
+		/*
+			Save button click, display dialog with filename entry.
+		 */
 		save_btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -313,7 +313,9 @@ public class GameStructure {
 				buttons_panel.add(save_btn, BorderLayout.EAST);
 				buttons_panel.add(exit_btn, BorderLayout.WEST);
 
-				filename_dialog.add(new JLabel("Please enter desired filename ending in .txt"), BorderLayout.NORTH);
+				JLabel lab = new JLabel("Please enter desired filename ending in .txt");
+				lab.setHorizontalAlignment(JLabel.CENTER);
+				filename_dialog.add(lab, BorderLayout.NORTH);
 				filename_dialog.add(buttons_panel, BorderLayout.SOUTH);
 
 				JTextField name_field = new JTextField();
@@ -336,7 +338,9 @@ public class GameStructure {
 				});
 			}
 		});
-
+		/*
+			Load button click, display dialog with filename entry.
+		 */
 		load_btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -351,7 +355,9 @@ public class GameStructure {
 				buttons_panel.add(exit_btn, BorderLayout.WEST);
 
 				filename_dialog.add(buttons_panel, BorderLayout.SOUTH);
-				filename_dialog.add(new JLabel("Please enter desired filename ending in .txt"), BorderLayout.NORTH);
+				JLabel lab = new JLabel("Please enter desired filename ending in .txt");
+				lab.setHorizontalAlignment(JLabel.CENTER);
+				filename_dialog.add(lab, BorderLayout.NORTH);
 
 				JTextField name_field = new JTextField();
 				filename_dialog.add(name_field, BorderLayout.CENTER);
@@ -374,18 +380,25 @@ public class GameStructure {
 				});
 			}
 		});
+		/*
+			Draw each case button to the window.
+		 */
 		for(JButton button: buttons){
 			if(button != null) {
 				case_panel.add(button);
 				button.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
+						/*
+						 	User Case and one other are the only cases left, display value of user case, game over.
+						 */
 						if(game.casesLeft == 2)
 						{
 							JDialog d = new JDialog();
 							d.setLayout(new BorderLayout());
 							JLabel case_message = new JLabel();
 							case_message.setText("Your case: " + game.userCase + " held a value of $" + game.cases[1][game.userCase]);
+							case_message.setHorizontalAlignment(JLabel.CENTER);
 							d.add(case_message, BorderLayout.NORTH);
 							JButton close_btn = new JButton("Exit");
 							d.add(close_btn, BorderLayout.SOUTH);
@@ -398,6 +411,9 @@ public class GameStructure {
 								}
 							});
 						}
+						/*
+							Offer player an offer from the Banker, as per the show's rules on certain turn numbers.
+						 */
 						else if (game.casesLeft == 19 || game.casesLeft == 14 || game.casesLeft == 10 || game.casesLeft == 7 || game.casesLeft <= 5) {
 							int num = Integer.parseInt(button.getText());
 							double val = game.chooseCase(num);
@@ -405,10 +421,12 @@ public class GameStructure {
 							d.setLayout(new BorderLayout());
 							JLabel case_message = new JLabel();
 							case_message.setText("Case: " + num + " held a value of " + val + "!");
+							case_message.setHorizontalAlignment(JLabel.CENTER);
 							d.add(case_message, BorderLayout.NORTH);
 
 							JLabel banker_msg = new JLabel();
 							banker_msg.setText("The bank has a new offer for you.\n    $" + game.banker());
+							banker_msg.setHorizontalAlignment(JLabel.CENTER);
 							d.add(banker_msg, BorderLayout.CENTER);
 
 							JPanel buttons_panel = new JPanel();
@@ -428,6 +446,7 @@ public class GameStructure {
 										}
 									});
 									JLabel lab = new JLabel("You won " + game.banker() + "!");
+									lab.setHorizontalAlignment(JLabel.CENTER);
 									over.add(lab, BorderLayout.CENTER);
 									over.add(close_btn, BorderLayout.SOUTH);
 									over.setSize(200, 130);
@@ -436,7 +455,6 @@ public class GameStructure {
 							});
 
 							//Dont take the deal, generate new cases minus case chosen on previous turn, keep playing, unless there are no cases left.
-
 							JButton no_deal_btn = new JButton("No Deal!");
 							no_deal_btn.addActionListener(new ActionListener() {
 								@Override
@@ -454,17 +472,21 @@ public class GameStructure {
 							d.pack();
 							d.setVisible(true);
 						} // end if cases left
+						/*
+							Regular turn, pick a case, display the value to the user, game continues.
+						 */
 						else {
 							int case_num = Integer.parseInt(button.getText());
 							game.chooseCase(case_num);
 							JDialog d = new JDialog();
 							d.setLayout(new BorderLayout());
 							JLabel case_message = new JLabel();
-							case_message.setText("Case " + game.userCase + " held a value of $" + game.cases[1][case_num]);
+							case_message.setText("Case " + case_num + " held a value of $" + game.cases[1][case_num]);
+							case_message.setHorizontalAlignment(JLabel.CENTER);
 							d.add(case_message, BorderLayout.CENTER);
 							JButton close_btn = new JButton("Exit");
 							d.add(close_btn, BorderLayout.SOUTH);
-							d.setSize(300, 200);
+							d.setSize(300, 150);
 							d.setVisible(true);
 							close_btn.addActionListener(new ActionListener() {
 								@Override
@@ -482,6 +504,9 @@ public class GameStructure {
 				}); //end case button actionListener
 			}
 		}
+		/*
+			Draw the values remaining in play list to the screen.
+		 */
 		DefaultListModel<String> model = new DefaultListModel<>();
 		window.add(case_panel, BorderLayout.CENTER);
 		for(int j = 0; j < 26; j++) {
@@ -496,6 +521,11 @@ public class GameStructure {
 		window.add(values_remaining_panel, BorderLayout.EAST);
 		window.pack();
 	}
+
+	/**
+	 * Creates the game window and elements, calls the drawCases method, and runs the game.
+	 * @param args - Not used.
+	 */
 	public static void main(String[] args){
 		JFrame window = new JFrame();
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -506,11 +536,13 @@ public class GameStructure {
 		JDialog case_dialog = new JDialog();
 		case_dialog.setSize(200, 200);
 		case_dialog.setLayout(new BorderLayout());
+		case_dialog.setBackground(Color.DARK_GRAY);
 		JPanel button_panel = new JPanel();
 		button_panel.setLayout(new BorderLayout());
 		JButton ok_btn = new JButton("OK");
 		JButton close_btn = new JButton("Exit");
 		JLabel prompt = new JLabel("Enter a case number 1 - 26");
+		prompt.setHorizontalAlignment(JLabel.CENTER);
 		JTextField field = new JTextField();
 
 		case_dialog.add(prompt, BorderLayout.NORTH);
@@ -521,7 +553,7 @@ public class GameStructure {
 		case_dialog.add(button_panel, BorderLayout.SOUTH);
 
 		case_dialog.setVisible(true);
-
+		//Start the game
 		ok_btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -531,6 +563,7 @@ public class GameStructure {
 				window.setVisible(true);
 			}
 		});
+		//Exit the game
 		close_btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
